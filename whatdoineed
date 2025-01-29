@@ -1,0 +1,91 @@
+import React, { useState } from "react";
+import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+
+const questions = [
+  {
+    id: 1,
+    question: "What type of business do you operate?",
+    options: ["Manufacturer", "Importer or distributor", "Brand owner", "Online marketplace seller", "Retailer"],
+    type: "multiple",
+  },
+  {
+    id: 2,
+    question: "Where do you sell your products?",
+    options: ["France", "Germany", "Spain", "Other EU countries", "Outside the EU"],
+    type: "multiple",
+  },
+  {
+    id: 3,
+    question: "Which types of products do you sell?",
+    options: ["Products with packaging", "Electrical and electronic products", "Batteries", "Textiles and clothing", "Furniture", "Tires"],
+    type: "multiple",
+  }
+];
+
+const EPRSelfAssessment = () => {
+  const [answers, setAnswers] = useState({});
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [result, setResult] = useState(null);
+
+  const handleAnswer = (answer) => {
+    setAnswers({ ...answers, [questions[currentQuestion].id]: answer });
+    if (currentQuestion + 1 < questions.length) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      evaluateEPR();
+    }
+  };
+
+  const evaluateEPR = () => {
+    const needsEPR = {};
+    if (answers[2]?.includes("France") || answers[3]?.includes("Products with packaging")) {
+      needsEPR.France = true;
+    }
+    if (answers[2]?.includes("Germany") || answers[3]?.includes("Electrical and electronic products")) {
+      needsEPR.Germany = true;
+    }
+    if (answers[2]?.includes("Spain") || answers[3]?.includes("Batteries")) {
+      needsEPR.Spain = true;
+    }
+    setResult(needsEPR);
+  };
+
+  return (
+    <Card className="max-w-lg mx-auto mt-10 p-6 shadow-lg">
+      <CardContent>
+        {result ? (
+          <div>
+            <h2 className="text-xl font-bold mb-4">EPR Compliance Results</h2>
+            {Object.keys(result).length > 0 ? (
+              <ul>
+                {Object.entries(result).map(([country, required]) =>
+                  required ? <li key={country}>✅ You need EPR reporting in {country}</li> : null
+                )}
+              </ul>
+            ) : (
+              <p>✅ You do not need EPR reporting in these countries.</p>
+            )}
+          </div>
+        ) : (
+          <div>
+            <h2 className="text-lg font-semibold mb-4">{questions[currentQuestion].question}</h2>
+            <div className="space-y-2">
+              {questions[currentQuestion].options.map((option) => (
+                <Button
+                  key={option}
+                  onClick={() => handleAnswer(questions[currentQuestion].type === "multiple" ? [option] : option)}
+                  className="w-full"
+                >
+                  {option}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default EPRSelfAssessment;
